@@ -34,6 +34,7 @@ const routes = [
       }
     ]
   },
+
   // 停车场
   {
     path: "/parking",
@@ -46,16 +47,16 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: "/parkingIndex",
-        name: "ParkingIndex",
+        path: "/parking",
+        name: "Parking",
         meta: {
           title: "列表管理"
         },
         component: () => import("../views/Parking/index.vue"),
       },
       {
-        path: "/parkingAdd",
-        name: "ParkingAdd",
+        path: "/add",
+        name: "add",
         meta: {
           title: "新增停车场"
         },
@@ -63,6 +64,7 @@ const routes = [
       }
     ]
   },
+  
   // 车辆品牌
   {
     path: "/carsBrand",
