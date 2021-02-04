@@ -64,7 +64,7 @@ const routes = [
       }
     ]
   },
-  
+
   // 车辆品牌
   {
     path: "/carsBrand",
@@ -77,15 +77,16 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: "/carsBrandIndex",
-        name: "CarsBrandIndex",
+        path: "/brandList",
+        name: "BrandList",
         meta: {
           title: "品牌列表"
         },
-        component: () => import("../views/carsBrand/index.vue"),
+        component: () => import("../views/Carsbrand/index.vue"),
       }
     ]
   },
+  
   // 车辆管理
   {
     path: "/cars",
