@@ -1,171 +1,223 @@
 <template>
-    <div>
-        <TabalData ref="table" :config="table_config">
-            <!--禁启用-->
-            <template v-slot:status="slotData">
-                <el-switch :disabled="slotData.data.id == switch_disabled" @change="switchChange(slotData.data)" v-model="slotData.data.status" active-color="#13ce66" inactive-color="#ff4949"> </el-switch>
-            </template>
-        </TabalData>
-        <MapLocation :flagVisible.sync="map_show" :data="parking_data" />
-    </div>
+  <div class="addContent">
+    <el-form ref="form" :model="form" label-width="90px">
+      <el-form-item label="车辆品牌">
+        <el-select v-model="form.brand" placeholder="选择品牌">
+          <el-option label="奔驰" value="benchi"></el-option>
+          <el-option label="宝马" value="baoma"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="车辆型号">
+        <el-select v-model="form.model" placeholder="选择型号">
+          <el-option label="奔驰" value="benchi"></el-option>
+          <el-option label="宝马" value="baoma"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="停车场">
+        <el-select v-model="form.park" placeholder="选择停车场">
+          <el-option label="奔驰" value="benchi"></el-option>
+          <el-option label="宝马" value="baoma"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="车牌号">
+        <el-input v-model="form.name"></el-input>
+      </el-form-item>
+
+      <el-form-item label="车架号">
+        <el-input v-model="form.name"></el-input>
+      </el-form-item>
+
+      <el-form-item label="发动机号">
+        <el-input v-model="form.name"></el-input>
+      </el-form-item>
+
+      <el-form-item label="年检">
+        <el-radio-group v-model="form.resource">
+          <el-radio label="已检"></el-radio>
+          <el-radio label="未检"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item label="保养日期">
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-input v-model="form.name"></el-input>
+          </el-col>
+          <el-col :span="6">下次保养日期：2020-12-12</el-col>
+        </el-row>
+      </el-form-item>
+
+      <el-form-item label="档位">
+        <el-radio-group v-model="form.resource">
+          <el-radio label="自动挡"></el-radio>
+          <el-radio label="手动"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item label="能源类型">
+        <el-radio-group v-model="form.energyType">
+          <el-radio label="1">电</el-radio>
+          <el-radio label="2">油</el-radio>
+          <el-radio label="3">混合</el-radio>
+        </el-radio-group>
+        <div class="progress-bar-wrap" v-if="form.energyType == 1 || form.energyType == 3">
+          <span class="label-text">电量：</span>
+          <el-row :gutter="20">
+            <el-col :span="5">
+              <div class="progress-bar">
+                <span style="width: 50%">
+                  <label>50%</label>
+                </span>
+              </div>
+            </el-col>
+            <el-col :span="2">
+              <el-input size="small" value="100"> </el-input>
+            </el-col>
+          </el-row>
+        </div>
+        <div class="progress-bar-wrap" v-if="form.energyType == 2 || form.energyType == 3">
+          <span class="label-text">油量：</span>
+          <el-row :gutter="20">
+            <el-col :span="5">
+              <div class="progress-bar">
+                <span style="width: 50%">
+                  <label>50%</label>
+                </span>
+              </div>
+            </el-col>
+            <el-col :span="2">
+              <el-input size="small" value="100"> </el-input>
+            </el-col>
+          </el-row>
+        </div>
+      </el-form-item>
+
+      <el-form-item label="禁启用">
+        <el-radio-group v-model="form.resource">
+          <el-radio label="禁用"></el-radio>
+          <el-radio label="启用"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      
+      <el-form-item label="车辆属性">
+  
+        <div class="cars-property-wrap" v-for="(item, index) in carsList" :key="item.key">
+          <el-row :gutter="20">
+            <el-col :span="5">
+              <el-input value="item.key" v-model="item.key"></el-input>
+            </el-col>
+            <el-col :span="5">
+              <el-input value="item.value" v-model="item.value"></el-input>
+            </el-col>
+            <el-col :span="2">
+              <el-button v-if="index==0" type="primary" @click="addAttr">+</el-button>
+              <el-button v-else>-</el-button>
+            </el-col>
+          </el-row>
+        </div>
+        
+      </el-form-item>
+
+      <el-form-item label="车辆描述">
+        <!-- 富文本编辑器的dom元素 -->
+        <div ref="editorDom" style="text-align:left;"></div>
+      </el-form-item>
+      
+      <el-form-item>
+        <el-button type="danger">立即创建</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
+
 <script>
-// 组件
-import CityArea from "@c/common/cityArea";
-import MapLocation from "@c/dialog/showMapLocation";
-import TabalData from "@c/tableData";
-// API
-import { CarsStatus, CarsLock } from "@/api/cars";
-// common
-import { address, yearCheckType, energyType } from "@/utils/common";
+//富文本编辑器
+import Editor from "wangeditor";
 export default {
-    name: "Cars",
-    data(){
-        return {
-            // 表格配置
-            table_config:{
-                thead: [
-                    { label: "车牌号", prop: "carsMode" },
-                    { label: "车辆品牌", prop: "nameCh" },
-                    { 
-                        label: "车辆LOGO", 
-                        prop: "imgUrl",
-                        type: "image"
-                    },
-                    { 
-                        label: "车辆图片", 
-                        prop: "carsImg",
-                        type: "image"
-                    },
-                    { 
-                        label: "年检", 
-                        prop: "yearCheck",
-                        type: "function",
-                        callback: (row, prop) => yearCheckType(row[prop]),
-                        width: "100px"
-                    },
-                    { 
-                        label: "能源类型", 
-                        prop: "energyType",
-                        type: "function",
-                        callback: (row, prop) => energyType(row[prop]),
-                        width: "100px"
-                    },
-                    { 
-                        label: "禁启用",
-                        prop: "status",
-                        type: "slot",
-                        slotName: "status",
-                        width: "100px"
-                    },
-                    { 
-                        label: "车辆状态", 
-                        prop: "cars_status",
-                        type: "function",
-                        callback: (row) => {
-                            const carsStatus = this.$store.state.config.cars_status;
-                            const status = carsStatus[row.carsStatus];
-                            return status ? status.zh : "";
-                        }
-                    },
-                    { label: "停车场", prop: "parkingName" },
-                    { 
-                        label: "区域",
-                        prop: "address",
-                        type: "function",
-                        callback: (row, prop) => address(row[prop])
-                    },
-                    { 
-                        label: "操作",
-                        type: "operation",
-                        width: 300,
-                        default: {
-                            deleteButton: true,
-                            editButton: true,
-                            editButtonLink: "CarsAdd"
-                        },
-                        buttonGroup: [
-                            { label: "编辑", type: "danger", event: "link", name: "CarsAdd", key: "id", value: "id"},
-                            { label: "车辆释放", type: "", event: "button", handler: (data) => this.lock(data) },
-                        ]
-                    }
-                ],
-                url: "carsList",  // 真实URL请求地址
-                data: {
-                    pageSize: 10,
-                    pageNumber: 1
-                },
-                form_item: [
-                    { label: "城市", type: "City" },
-                    { label: "类型", prop: "parkingType", type: "Select", width: '120px', options: "parking_type"  },
-                    { label: "禁启用", prop: "status", type: "Select", width: '120px', options: "radio_disabled" },
-                    { label: "关键字",  type: "Keyword" },
-                ],
-                form_handler: [
-                    { label: "新增", prop: "add", type: "success", element: "link", router: "/carsAdd" },
-                    { label: "下载", prop: "down", type: "success", element: "button", handler: () => this.aaaa() },
-                ],
-                form_config: {
-                    resetButton: true
-                }
-            },
-            switch_disabled: "",
-            switch_flag: false,
-            // 禁启用
-            parking_status: this.$store.state.config.radio_disabled,
-            // 停车场类型
-            parking_type: this.$store.state.config.parking_type,
-            // 地图显示 
-            map_show: false,
-            parking_data: {},
-            table_loading: false,
-            rowId: ""
-        }
+  name: "add",
+  data() {
+    return {
+      form: {
+        name: "",
+        region: "",
+        date1: "",
+        date2: "",
+        brand: "",
+        model: "",
+        park: "",
+        delivery: false,
+        energyType: "1",
+        type: [],
+        resource: "",
+        desc: "",
+      },
+      carsList: [
+        {key:111,value:111},
+        {key:222,value:222},
+        {key:333,value:333},
+        {key:444,value:444},
+      ],
+      // 富文本对象
+      editor: null
+    };
+  },
+  mounted() {
+    this.createEditor();
+  },
+  methods: {
+    addAttr(){
+      this.carsList.push({key:555,value:555},)
     },
-    components: { CityArea, MapLocation, TabalData },
-    methods: {
-        callbackComponent(params){
-            if(params.function) { this[params.function](params.data); }
-        },
-        /** 禁启用 */
-        switchChange(data){
-            if(this.switch_flag) { return false; }
-            const requestData = {
-                id: data.id,
-                status: data.status
-            }
-            // this.switch_flag = true;
-            this.switch_disabled = data.id;  // 第一种方式：组件本身的属性处理
-            CarsStatus(requestData).then(response => {
-                this.$message({
-                    type: 'success',
-                    message: response.message
-                });
-                this.switch_disabled = "";
-                // this.switch_flag = false;
-            }).catch(error => {
-                this.switch_disabled = "";
-                // this.switch_flag = false;
-            })
-        },
-        /** 显示地图 */
-        showMap(data){
-            this.map_show = true;
-            this.parking_data = data;
-        },
-        lock(data){
-            CarsLock({id: data.id})
-        },
-        aaaa(){
-            alert(1111)
-        }
-    },
-    
-    // DOM元素渲染之前（生命周期）
-    beforeMount(){},
-    // DOM元素渲染完成（生命周期）
-    mounted(){},
+    // 创建富文本对象
+    createEditor() {
+      this.editor = new Editor(this.$refs.editorDom);
+      this.editor.customConfig.onchange = html => {};
+      // 下面是创建富文本实例
+      this.editor.create();
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.address-map {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #ccc;
+}
+.progress-bar-wrap {
+  padding-left: 50px;
+  position: relative;
+  .label-text {
+    position: absolute;
+    left: 0;
+  }
 }
 
-</script>
-<style lass="scss" scoped></style>
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #ccc;
+  border-radius: 50px;
+  margin-top: 15px;
+  span {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50px;
+    background-color: #409eff;
+    label {
+      position: absolute;
+      right: -10px;
+      bottom: 10%;
+    }
+  }
+}
+.cars-property-wrap {
+  margin-top: 10px;
+}
+</style>

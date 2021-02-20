@@ -82,15 +82,15 @@ const routes = [
         meta: {
           title: "品牌列表"
         },
-        component: () => import("../views/Carsbrand/index.vue"),
+        component: () => import("../views/carsBrand/index.vue"),
       }
     ]
   },
-  
+
   // 车辆管理
   {
-    path: "/cars",
-    name: "cars",
+    path: "/carsManage",
+    name: "CarsManage",
     meta: {
       title: "车辆管理",
       icon: "console",
@@ -99,31 +99,24 @@ const routes = [
     component: Layout,
     children: [
       {
-        path: "/carsAttr",
-        name: "CarsAttr",
-        meta: {
-          title: "车辆属性"
-        },
-        component: () => import("../views/Cars/attrList.vue"),
-      },
-      {
-        path: "/carsIndex",
-        name: "CarsIndex",
+        path: "/carsList",
+        name: "CarsList",
         meta: {
           title: "车辆列表"
         },
         component: () => import("../views/Cars/index.vue"),
       },
       {
-        path: "/carsAdd",
-        name: "CarsAdd",
+        path: "/addCars",
+        name: "AddCars",
         meta: {
           title: "新增车辆"
         },
-        component: () => import("../views/Cars/add.vue"),
+        component: () => import("../views/Cars/addCars.vue"),
       }
     ]
   },
+
   // 销售管理
   {
     path: "/sale",

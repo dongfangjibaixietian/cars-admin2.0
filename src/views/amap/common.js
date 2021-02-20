@@ -1,7 +1,7 @@
-export function getLngLat(e){
+export function getLngLag(e) {
     return {
         lng: e.lnglat.getLng(),
         lat: e.lnglat.getLat(),
-        value: e.lnglat.getLng() + ',' + e.lnglat.getLat()
+        value: e.lnglat.getLng() + ',' + e.lnglat.getLat(),
     }
 }

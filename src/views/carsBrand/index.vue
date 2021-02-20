@@ -64,48 +64,15 @@
       </el-table>
     </div>
     <!-- 新增车辆弹出窗口 -->
-    <div class="dialogcontent">
-      <el-dialog title="新增车辆品牌" :visible.sync="dialogFormVisible" center>
-        <el-form ref="form" :model="form" label-width="90px">
-          <el-form-item label="车辆品牌">
-            <el-input v-model="form.name"></el-input>
-          </el-form-item>
-          <el-form-item label="品牌型号">
-            <el-input v-model="form.name"></el-input>
-          </el-form-item>
-          <el-form-item label="LOGO">
-            <div class="logoContent">
-              <div class="uploadImg"></div>
-              <div class="imgList">111</div>
-            </div>
-          </el-form-item>
-          <el-form-item label="禁启用">
-            <el-radio-group v-model="form.resource">
-              <el-radio label="禁用"></el-radio>
-              <el-radio label="启用"></el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <!-- <el-form-item label="描述">
-            <div class="address-map"></div>
-          </el-form-item> -->
-          <el-form-item label="经纬度">
-            <el-input v-model="form.name"></el-input>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="dialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogFormVisible = false"
-            >确 定</el-button
-          >
-        </div>
-      </el-dialog>
-    </div>
+    <addCarsBrand2 :dialogFormVisible.sync="dialogFormVisible"/>
   </div>
 </template>
 
 <script>
+import addCarsBrand2 from "../../components/dialog/addCarsBrand2"
 export default {
   name: "index",
+  components: { addCarsBrand2 },
   data() {
     return {
       formInline: {
@@ -141,7 +108,7 @@ export default {
           address: "12334 ,1234",
         },
       ],
-      dialogFormVisible: true,
+      dialogFormVisible: false,
       form: {
         name: "",
         region: "",
