@@ -8,3 +8,12 @@ export function ParkingAdd(data = {}) {
         data
     })
 }
+
+// 停车场列表接口
+export function ParkingList(data = {}) {
+    return service.request({
+        method: "post",
+        url: "/parking/list/",
+        data
+    })
+}

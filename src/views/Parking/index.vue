@@ -41,24 +41,26 @@
     <div class="tablecontent">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column type="selection" width="45"> </el-table-column>
-        <el-table-column prop="name" label="停车场名称" width="180">
+        <el-table-column prop="parkingName" label="停车场名称" width="180">
         </el-table-column>
         <el-table-column prop="type" label="类型" width="180">
         </el-table-column>
-        <el-table-column prop="area" label="区域"> </el-table-column>
+        <el-table-column prop="address" label="区域"> </el-table-column>
         <el-table-column prop="carsNumber" label="可停放车辆">
         </el-table-column>
-        <el-table-column prop="disable" label="禁启用">
+        <el-table-column prop="status" label="禁启用">
           <template slot-scope="scope">
             <el-switch
-              v-model="scope.row.disable"
+              v-model="scope.row.status"
+              active-value="2"
+              inactive-value="1"
               active-color="#13ce66"
               inactive-color="#ff4949"
             >
             </el-switch>
           </template>
         </el-table-column>
-        <el-table-column prop="address" label="查看位置"> </el-table-column>
+        <el-table-column prop="lnglat" label="查看位置"> </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button type="danger" size="small">编辑</el-button>
@@ -71,7 +73,8 @@
 </template>
 
 <script>
-export default {
+import { ParkingList } from "../../api/parking";
+ export default {
   name: "index",
   data() {
     return {
@@ -98,18 +101,25 @@ export default {
           ],
         },
       ],
-      tableData: [
-        {
-          name: "南山停车场",
-          type: "室外停车场",
-          area: "上海市普陀区金沙江路 1518 弄",
-          carsNumber: 20,
-          disable: 0,
-          address: "12334 ,1234",
-        },
-      ],
+      tableData: [],
     };
   },
+  methods: {
+    getParkingList() {
+      const requestData = {
+      pageSize: 10,
+      pageNumber: 1
+    };
+      ParkingList(requestData).then((res) => {
+        const data = res.data;
+        this.tableData = data.data;
+        console.log(this.tableData);
+      })
+    }
+  },
+ beforeMount(){
+   this.getParkingList();
+ }
 };
 </script>
 
