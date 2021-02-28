@@ -8,14 +8,14 @@ const state = {
     },
     // 停车场类型
     parking_type: [
-        { label: "室内", value: 1 },
-        { label: "室外", value: 2 }
-    ],
+        {label:1, value:"禁用"},
+        {label:2, value:"启用"},
+      ],
     // 停车场状态
-    parking_status: [
-        { label: "禁用", value: 1 },
-        { label: "启用", value: 2 }
-    ],
+    parking_status:[
+        {label:1, value:"室内"},
+        {label:2, value:"室外"},
+      ],
     // 禁用、启用
     radio_disabled: [
         { label: "禁用", value: false },

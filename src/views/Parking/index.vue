@@ -2,27 +2,35 @@
   <div>
     <!-- 表头 -->
     <el-row>
-      <el-col :span="18"
+      <el-col :span="21"
         ><div class="formheader">
-          <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item label="停车场名称">
-              <el-input
-                v-model="formInline.user"
-                placeholder="审批人"
-              ></el-input>
-            </el-form-item>
+          <el-form :inline="true" :model="form" class="demo-form-inline">
             <el-form-item label="区域">
               <el-cascader
-                v-model="value"
+                v-model="form.area"
                 :options="options"
-                :props="{ expandTrigger: 'hover' }"
+                :props="props"
               ></el-cascader>
             </el-form-item>
             <el-form-item label="类型">
-              <el-select v-model="formInline.region" placeholder="活动区域">
-                <el-option label="区域一" value="shanghai"></el-option>
-                <el-option label="区域二" value="beijing"></el-option>
+              <el-select v-model="form.type" placeholder="活动区域">
+                <el-option label="室内" value="1"></el-option>
+                <el-option label="室外" value="2"></el-option>
               </el-select>
+            </el-form-item>
+            <el-form-item label="禁启用">
+              <el-select v-model="form.status" placeholder="请选择">
+                <el-option v-for="item in parking_type" :label="item.value" :value="item.label" :key="item.index"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="关键字">
+              <el-select v-model="form.key" placeholder="请选择">
+                <el-option label="停车场名称" value="parkingName"></el-option>
+                <el-option label="关键字" value="address"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-input placeholder="请输入关键字"></el-input>
             </el-form-item>
             <el-form-item>
               <el-button type="primary">查询</el-button>
@@ -30,10 +38,10 @@
           </el-form>
         </div></el-col
       >
-      <el-col :span="6">
-          <router-link to="/add">
+      <el-col :span="3">
+        <router-link to="/add">
           <el-button type="danger" class="newPark">新增停车场</el-button>
-          </router-link>
+        </router-link>
       </el-col>
     </el-row>
 
@@ -68,63 +76,143 @@
           </template>
         </el-table-column>
       </el-table>
+      <div>
+        <el-row class="page">
+          <el-col :span="4" class="space-occupying"> </el-col>
+          <el-col :span="20">
+            <el-pagination
+              class="pull-right"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage4"
+              :page-sizes="[10, 20, 50, 100]"
+              :page-size="10"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="total"
+            >
+            </el-pagination>
+          </el-col>
+        </el-row>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { ParkingList } from "../../api/parking";
- export default {
+import { GetCity } from "../../api/common";
+export default {
   name: "index",
   data() {
+    const _this = this;
     return {
-      formInline: {
+      total: null,
+      currentPage4: 1,
+      pageSize: 10,
+      pageNumber: 1,
+      parking_type: this.$store.state.config.parking_type,
+      parking_status: this.$store.state.config.parking_status,
+      form: {
         user: "",
         region: "",
+        type: "",//室内室外
+        status: "",//禁启用
+        area: "",
+        key:"", //关键字
+      },
+      props: {
+        lazy: true,
+        lazyLoad(node, resolve) {
+          const level = node.level;
+          // 定义请求JSON对象
+          const requestData = {};
+          // 声明自定义配置
+          // 省份
+          if (level == 0) {
+            // 给空JSON对象添加一组键值对
+            requestData.type = "province";
+          }
+          // 城市
+          if (level == 1) {
+            requestData.type = "city";
+            requestData.province_code = node.value;
+          }
+          // 区
+          if (level == 2) {
+            requestData.type = "area";
+            requestData.city_code = node.value;
+          }
+          GetCity(requestData).then((res) => {
+            const data = res.data.data;
+            if (level == 0) {
+              data.forEach((item) => {
+                item.value = item.PROVINCE_CODE;
+                item.label = item.PROVINCE_NAME;
+              });
+            }
+            if (level == 1) {
+              data.forEach((item) => {
+                item.value = item.CITY_CODE;
+                item.label = item.CITY_NAME;
+              });
+            }
+            if (level == 2) {
+              data.forEach((item) => {
+                item.value = item.AREA_CODE;
+                item.label = item.AREA_NAME;
+                item.leaf = level >= 2;
+              });
+              console.log(data);
+            }
+            // 下面专门存储省市区的数据
+            resolve(data);
+          });
+          // 通过调用resolve将子节点数据返回，通知组件数据加载完成
+          // resolve(nodes);
+        },
       },
       value: [],
-      options: [
-        {
-          value: "zhinan",
-          label: "指南",
-          children: [
-            {
-              value: "shejiyuanze",
-              label: "设计原则",
-              children: [
-                {
-                  value: "yizhi",
-                  label: "一致",
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      options: [],
+      address: [],
       tableData: [],
     };
   },
   methods: {
     getParkingList() {
       const requestData = {
-      pageSize: 10,
-      pageNumber: 1
-    };
+        pageSize: this.pageSize,
+        pageNumber: this.pageNumber,
+      };
       ParkingList(requestData).then((res) => {
         const data = res.data;
         this.tableData = data.data;
+        this.total = data.total;
         console.log(this.tableData);
-      })
-    }
+      });
+    },
+    handleSizeChange(val) {
+      this.pageSize = val;
+      this.getParkingList();
+    },
+    handleCurrentChange(val) {
+      this.pageNumber = val;
+      this.getParkingList();
+    },
   },
- beforeMount(){
-   this.getParkingList();
- }
+  beforeMount() {
+    this.getParkingList();
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .newPark {
-    float: right;
+  float: right;
+}
+.space-occupying {
+  padding-top: 2px;
+}
+.page {
+  padding-top: 20px;
 }
 </style>

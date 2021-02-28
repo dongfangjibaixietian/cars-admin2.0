@@ -57,14 +57,8 @@ export default {
   data() {
     const _this = this;
     return {
-      type: [
-        {label:1, value:"禁用"},
-        {label:2, value:"启用"},
-      ],
-      status: [
-        {label:1, value:"室内"},
-        {label:2, value:"室外"},
-      ],
+      type: this.$store.state.config.parking_type,
+      status: this.$store.state.config.parking_status,
       address: [],
       addressMore: {},
       // 控制按钮加载与否
