@@ -24,16 +24,16 @@
               </el-select>
             </el-form-item>
             <el-form-item label="关键字">
-              <el-select v-model="form.key" placeholder="请选择">
+              <el-select v-model="keyword" placeholder="请选择">
                 <el-option label="停车场名称" value="parkingName"></el-option>
                 <el-option label="关键字" value="address"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item>
-              <el-input placeholder="请输入关键字"></el-input>
+              <el-input v-model="key_value" placeholder="请输入关键字"></el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary">查询</el-button>
+              <el-button type="primary" @click="search">查询</el-button>
             </el-form-item>
           </el-form>
         </div></el-col
@@ -118,8 +118,9 @@ export default {
         type: "",//室内室外
         status: "",//禁启用
         area: "",
-        key:"", //关键字
       },
+      keyword:"", //关键字的key
+      key_value:"", //关键字的值
       props: {
         lazy: true,
         lazyLoad(node, resolve) {
@@ -162,7 +163,6 @@ export default {
                 item.label = item.AREA_NAME;
                 item.leaf = level >= 2;
               });
-              console.log(data);
             }
             // 下面专门存储省市区的数据
             resolve(data);
@@ -178,16 +178,34 @@ export default {
     };
   },
   methods: {
+    // 搜索的时候调接口方法更新列表就行了
+    search(){
+      console.log(this.form);
+      this.getParkingList();
+    },
     getParkingList() {
       const requestData = {
         pageSize: this.pageSize,
         pageNumber: this.pageNumber,
       };
+      const filterData = JSON.parse(JSON.stringify(this.form));
+      // 拿json对象里面的key的方法,通过循环可以拿到所有的jsonkey值
+      for(let key in filterData) {
+      //filterData[key]是拿循环里面所有key对应值的方法
+        if(filterData[key]){
+          // 下面是给json对象添加新key新值的方法，等号左边是添加新key，等号右边是添加key对应的新值。
+          requestData[key] = filterData[key];
+        }
+      };
+      // 下面是对关键字的key跟value值进行判断，有的话就一起添加进requestData对象中。
+      if(this.keyword && this.key_value) {
+        requestData[this.keyword] = this.key_value
+      }
+      console.log(requestData);
       ParkingList(requestData).then((res) => {
         const data = res.data;
         this.tableData = data.data;
         this.total = data.total;
-        console.log(this.tableData);
       });
     },
     handleSizeChange(val) {
