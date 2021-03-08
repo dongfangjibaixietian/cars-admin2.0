@@ -17,3 +17,21 @@ export function ParkingList(data = {}) {
         data
     })
 }
+
+// 停车场编辑页面详情接口
+export function ParkingDetailed(data = {}) {
+    return service.request({
+        method: "post",
+        url: "/parking/detailed/",
+        data
+    })
+}
+
+// 停车场编辑页面确定接口
+export function ParkingEdit(data = {}) {
+    return service.request({
+        method: "post",
+        url: "/parking/edit/",
+        data
+    })
+}

@@ -9,6 +9,7 @@
       </el-form-item>
       <el-form-item label="区域" prop="area">
         <el-cascader
+          :placeholder="initValue"
           v-model="form.area"
           :options="options"
           :props="props"
@@ -17,7 +18,12 @@
 
       <el-form-item label="类型">
         <el-radio-group v-model="form.type">
-          <el-radio v-for="item in type" :key="item.index" :label="item.label">{{item.value}}</el-radio>
+          <el-radio
+            v-for="item in type"
+            :key="item.index"
+            :label="item.label"
+            >{{ item.value }}</el-radio
+          >
         </el-radio-group>
       </el-form-item>
       <el-form-item label="可停放车辆" prop="carsNumber">
@@ -25,7 +31,12 @@
       </el-form-item>
       <el-form-item label="禁启用" prop="status">
         <el-radio-group v-model="form.status">
-          <el-radio v-for="item in status" :key="item.index" :label="item.label">{{item.value}}</el-radio>
+          <el-radio
+            v-for="item in status"
+            :key="item.index"
+            :label="item.label"
+            >{{ item.value }}</el-radio
+          >
         </el-radio-group>
       </el-form-item>
       <el-form-item label="位置">
@@ -37,7 +48,10 @@
         <el-input v-model="form.lnglat"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="danger" :loading="button_loading" @click="submitForm('form')"
+        <el-button
+          type="danger"
+          :loading="button_loading"
+          @click="submitForm('form')"
           >立即创建</el-button
         >
       </el-form-item>
@@ -49,16 +63,17 @@
 import AMap from "../amap/index.vue";
 // 接口
 import { GetCity } from "../../api/common";
-import { ParkingAdd } from "../../api/parking";
-
+import { ParkingAdd, ParkingDetailed, ParkingEdit } from "../../api/parking";
 
 export default {
   name: "add",
   data() {
     const _this = this;
     return {
+      id: this.$route.query.id,
       type: this.$store.state.config.parking_type,
       status: this.$store.state.config.parking_status,
+      initValue: "请选择区域", //控制区域的默认值
       address: [],
       addressMore: {},
       // 控制按钮加载与否
@@ -157,31 +172,70 @@ export default {
     submitForm(form) {
       this.$refs[form].validate((valid) => {
         if (valid) {
-          this._ParkingAdd();
+          this.id ? this._ParkingEdit() : this._ParkingAdd();
         } else {
           console.log("error submit!!");
           return false;
         }
       });
     },
-    _ParkingAdd(){
+    _ParkingAdd() {
       this.button_loading = true;
-      ParkingAdd(this.form).then((res)=> {
-        this.$message({
-          message: '提交成功！',
-          type: 'success'
-        });
-        // 重置表单时传的参数要加“”号
+      ParkingAdd(this.form)
+        .then((res) => {
+          this.$message({
+            message: "提交成功！",
+            type: "success",
+          });
+          // 重置表单时传的参数要加“”号
           this.resetForm("form");
           this.button_loading = false;
-      }).catch(error => {
-        this.button_loading = false;
-      })
+        })
+        .catch((error) => {
+          this.button_loading = false;
+        });
+    },
+    _ParkingEdit() {
+      this.button_loading = true;
+      const requestData = JSON.parse(JSON.stringify(this.form));
+      requestData.id = this.id;
+      ParkingEdit(requestData)
+        .then((res) => {
+          this.$message({
+            message: "提交成功！",
+            type: "success",
+          });
+          this.$router.push({
+            name: "Parking",
+          })
+          this.button_loading = false;
+        })
+        .catch((error) => {
+          this.button_loading = false;
+        });
+    },
+    _ParkingDetailed() {
+      if (!this.id) {
+        return false;
+      }
+      const id = this.id;
+      ParkingDetailed({ id: this.id }).then((res) => {
+        const data = res.data;
+        for (let key in data) {
+          //include用于某个数组里面对某个值的判断
+          if (Object.keys(this.form).includes(key)) {
+            this.form[key] = data[key];
+          }
+        }
+        this.initValue = data.address.split(",").join("/");
+      });
     },
     resetForm(formName) {
-        this.$refs[formName].resetFields();
-      }
-
+      this.$refs[formName].resetFields();
+    },
+  },
+  beforeMount() {
+    this._ParkingDetailed();
   },
 };
 </script>
