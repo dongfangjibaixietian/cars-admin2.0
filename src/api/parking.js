@@ -35,3 +35,12 @@ export function ParkingEdit(data = {}) {
         data
     })
 }
+
+// 停车场删除行数据确定接口
+export function ParkingDelate(data = {}) {
+    return service.request({
+        method: "post",
+        url: "/parking/delete/",
+        data
+    })
+}

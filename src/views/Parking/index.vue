@@ -55,11 +55,15 @@
 
     <!-- 表格数据 -->
     <div class="tablecontent">
-      <el-table :data="tableData" border style="width: 100%">
+      <tableData :config="table_config" />
+      <el-table :data="tableData" border style="width: 100%" v-loading="loading">
         <el-table-column type="selection" width="45"> </el-table-column>
         <el-table-column prop="parkingName" label="停车场名称" width="180">
         </el-table-column>
         <el-table-column prop="type" label="类型" width="180">
+          <template slot-scope="scope">
+            <span>{{ getType(scope.row.type) }}</span>
+          </template>
         </el-table-column>
         <el-table-column prop="address" label="区域"> </el-table-column>
         <el-table-column prop="carsNumber" label="可停放车辆">
@@ -82,7 +86,7 @@
             <el-button type="danger" size="small" @click="edit(scoped.row.id)"
               >编辑</el-button
             >
-            <el-button size="small">删除</el-button>
+            <el-button size="small" @click="del(scoped.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -109,8 +113,10 @@
 </template>
 
 <script>
-import { ParkingList } from "../../api/parking";
+import { ParkingList, ParkingDelate } from "../../api/parking";
 import { GetCity } from "../../api/common";
+// 组件
+import tableData from "../../components/tableData"
 export default {
   name: "index",
   data() {
@@ -122,6 +128,14 @@ export default {
       pageNumber: 1,
       parking_type: this.$store.state.config.parking_type,
       parking_status: this.$store.state.config.parking_status,
+      loading: false,//控制表格的加载
+      //给表格组件传参数
+      table_config: {
+        tHead: [
+          {prop: "parkingName",label:"停车场名称"}
+
+        ]
+      },
       form: {
         user: "",
         region: "",
@@ -187,6 +201,7 @@ export default {
       tableData: [],
     };
   },
+  components: { tableData },
   methods: {
     // 搜索的时候调接口方法更新列表就行了
     search() {
@@ -197,9 +212,32 @@ export default {
       this.$router.push({
         name: "add",
         query: {
-          id:id,
-        }
+          id: id,
+        },
+      });
+    },
+    del(id) {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       })
+        .then(() => {
+          ParkingDelate({ id: id }).then((res) => {
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+            //删除完之后重新请求列表，就可以实现对列表数据的实时刷新
+            this.getParkingList();
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
     },
     getParkingList() {
       const requestData = {
@@ -218,11 +256,15 @@ export default {
       // 下面是对关键字的key跟value值进行判断，有的话就一起添加进requestData对象中。
       if (this.keyword && this.key_value) {
         requestData[this.keyword] = this.key_value;
-      }
+      };
+      this.loading = true
       ParkingList(requestData).then((res) => {
         const data = res.data;
         this.tableData = data.data;
         this.total = data.total;
+        this.loading = false;
+      }).catch((res)=> {
+        this.loading = true
       });
     },
     handleSizeChange(val) {
@@ -232,6 +274,14 @@ export default {
     handleCurrentChange(val) {
       this.pageNumber = val;
       this.getParkingList();
+    },
+    getType(val) {
+      const data = this.parking_status.filter((item) => {
+        return item.label == val;
+      });
+      if (data && data.length > 0) {
+        return data[0].value;
+      }
     },
   },
   beforeMount() {

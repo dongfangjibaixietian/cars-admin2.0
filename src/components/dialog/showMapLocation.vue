@@ -40,7 +40,7 @@ export default {
     opened(){
       this.$refs.aMap.mapCreate();
       // 调DOM元素的方法时，要确保DOM元素已被加载完成
-      this.$nextTick(() => { // DOM元素渲染完成后执行
+      this.$nextTick(() => { // DOM元素,即是aMap元素渲染完成后执行,此时调用的一定是ampa的setMarker方法
         const splitLnglat = this.data.lnglat.split(",");
         const lnglat = {
             lng: splitLnglat[0],
