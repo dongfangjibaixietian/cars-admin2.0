@@ -56,7 +56,12 @@
     <!-- 表格数据 -->
     <div class="tablecontent">
       <tableData :config="table_config" />
-      <el-table :data="tableData" border style="width: 100%" v-loading="loading">
+      <el-table
+        :data="tableData"
+        border
+        style="width: 100%"
+        v-loading="loading"
+      >
         <el-table-column type="selection" width="45"> </el-table-column>
         <el-table-column prop="parkingName" label="停车场名称" width="180">
         </el-table-column>
@@ -116,7 +121,7 @@
 import { ParkingList, ParkingDelate } from "../../api/parking";
 import { GetCity } from "../../api/common";
 // 组件
-import tableData from "../../components/tableData"
+import tableData from "../../components/tableData";
 export default {
   name: "index",
   data() {
@@ -128,13 +133,19 @@ export default {
       pageNumber: 1,
       parking_type: this.$store.state.config.parking_type,
       parking_status: this.$store.state.config.parking_status,
-      loading: false,//控制表格的加载
+      loading: false, //控制表格的加载
       //给表格组件传参数
       table_config: {
         tHead: [
-          {prop: "parkingName",label:"停车场名称"}
-
-        ]
+          { prop: "parkingName", label: "停车场名称" },
+          { prop: "type", label: "类型" },
+          { prop: "", label: "区域" },
+          { prop: "carsNumber", label: "可停放车辆" },
+          { prop: "status", label: "禁启用" },
+          { prop: "lnglat", label: "查看位置" },
+          { prop: "", label: "操作" },
+        ],
+        checkBox: true
       },
       form: {
         user: "",
@@ -256,16 +267,18 @@ export default {
       // 下面是对关键字的key跟value值进行判断，有的话就一起添加进requestData对象中。
       if (this.keyword && this.key_value) {
         requestData[this.keyword] = this.key_value;
-      };
-      this.loading = true
-      ParkingList(requestData).then((res) => {
-        const data = res.data;
-        this.tableData = data.data;
-        this.total = data.total;
-        this.loading = false;
-      }).catch((res)=> {
-        this.loading = true
-      });
+      }
+      this.loading = true;
+      ParkingList(requestData)
+        .then((res) => {
+          const data = res.data;
+          this.tableData = data.data;
+          this.total = data.total;
+          this.loading = false;
+        })
+        .catch((res) => {
+          this.loading = true;
+        });
     },
     handleSizeChange(val) {
       this.pageSize = val;
