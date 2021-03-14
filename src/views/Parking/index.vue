@@ -138,14 +138,40 @@ export default {
       table_config: {
         tHead: [
           { prop: "parkingName", label: "停车场名称" },
-          { prop: "type", label: "类型" },
-          { prop: "", label: "区域" },
+          {
+            prop: "type",
+            label: "类型",
+            type: "function",
+            callback: (row) => {
+              const data = this.parking_status.filter((item) => {
+                return item.label == row.type;
+              });
+              if (data && data.length > 0) {
+                return data[0].value;
+              }
+            },
+          },
+          {
+            prop: "address",
+            label: "区域",
+            type: "function",
+            callback: (row) => {
+              let address = row.address.split(",");
+              let addressInfo = "";
+              addressInfo += address[0];
+              if (address[1]) {
+                addressInfo += `<br/>${address[1]}`;
+              }
+              return addressInfo;
+            },
+          },
           { prop: "carsNumber", label: "可停放车辆" },
           { prop: "status", label: "禁启用" },
           { prop: "lnglat", label: "查看位置" },
           { prop: "", label: "操作" },
         ],
-        checkBox: true
+        checkBox: true,
+        url: "/parking/list/",
       },
       form: {
         user: "",

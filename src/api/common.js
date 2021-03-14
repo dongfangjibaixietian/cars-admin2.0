@@ -17,7 +17,7 @@ export function GetCity(data = {}){
 export function GetTableData(params = {}){
     return service.request({
         method: "post",
-        url: requestUrl[params.url],
+        url: params.url,
         data: params.data
     })
 }
