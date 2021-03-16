@@ -23,6 +23,16 @@
         </template>
         </el-table-column>
         <el-table-column
+          v-if="item.type === 'slot'"
+          :key="item.label"
+          :prop="item.prop"
+          :label="item.label"
+        >
+        <template slot-scope="scoped">
+            <slot :name="item.slotName" :data="scoped.row"></slot>
+        </template>
+        </el-table-column>
+        <el-table-column
           v-else
           :key="item.label"
           :prop="item.prop"

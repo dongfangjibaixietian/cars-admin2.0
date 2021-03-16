@@ -55,7 +55,19 @@
 
     <!-- 表格数据 -->
     <div class="tablecontent">
-      <tableData :config="table_config" />
+      <tableData :config="table_config">
+        <!-- 在父组件里定义使用插槽的方法 -->
+        <template v-slot:status="data">
+          <el-switch
+            v-model="data.data.status"
+            active-value="2"
+            inactive-value="1"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          >
+          </el-switch>
+        </template>
+      </tableData>
       <el-table
         :data="tableData"
         border
@@ -142,6 +154,7 @@ export default {
             prop: "type",
             label: "类型",
             type: "function",
+            // 两种子组件调用父组件方法的方式，一种是遍历然后调用item.callback(),一种是插槽
             callback: (row) => {
               const data = this.parking_status.filter((item) => {
                 return item.label == row.type;
@@ -166,7 +179,7 @@ export default {
             },
           },
           { prop: "carsNumber", label: "可停放车辆" },
-          { prop: "status", label: "禁启用" },
+          { prop: "status", label: "禁启用", type: "slot", slotName: "status" },
           { prop: "lnglat", label: "查看位置" },
           { prop: "", label: "操作" },
         ],
