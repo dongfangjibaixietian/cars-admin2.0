@@ -23,7 +23,7 @@
         </template>
         </el-table-column>
         <el-table-column
-          v-if="item.type === 'slot'"
+          v-else-if="item.type === 'slot'"
           :key="item.label"
           :prop="item.prop"
           :label="item.label"
@@ -82,6 +82,7 @@ export default {
         tHead: [],
         checkBox: true,
         url: "",
+        data: {},
       },
       table_data: [],
     };
@@ -99,15 +100,16 @@ export default {
     loadData() {
       const requestData = {
         url: this.table_config.url,
-        data: {
-          pageSize: 10,
-          pageNumber: 1,
-        },
+        data: this.table_config.data,
       };
       GetTableData(requestData).then((res) => {
         const data = res.data;
         this.table_data = data.data;
       });
+    },
+    getTableList(val) {
+        if(val) {};
+        this.loadData()
     },
     beforeMount() {},
   },

@@ -55,7 +55,7 @@
 
     <!-- 表格数据 -->
     <div class="tablecontent">
-      <tableData :config="table_config">
+      <tableData :config="table_config" ref="table">
         <!-- 在父组件里定义使用插槽的方法 -->
         <template v-slot:status="data">
           <el-switch
@@ -67,46 +67,13 @@
           >
           </el-switch>
         </template>
+        <template v-slot:operate="data">
+          <el-button type="danger" size="small" @click="edit(data.data.id)"
+            >编辑</el-button
+          >
+          <el-button size="small" @click="del(data.data.id)">删除</el-button>
+        </template>
       </tableData>
-      <el-table
-        :data="tableData"
-        border
-        style="width: 100%"
-        v-loading="loading"
-      >
-        <el-table-column type="selection" width="45"> </el-table-column>
-        <el-table-column prop="parkingName" label="停车场名称" width="180">
-        </el-table-column>
-        <el-table-column prop="type" label="类型" width="180">
-          <template slot-scope="scope">
-            <span>{{ getType(scope.row.type) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="区域"> </el-table-column>
-        <el-table-column prop="carsNumber" label="可停放车辆">
-        </el-table-column>
-        <el-table-column prop="status" label="禁启用">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.status"
-              active-value="2"
-              inactive-value="1"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-            >
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column prop="lnglat" label="查看位置"> </el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scoped">
-            <el-button type="danger" size="small" @click="edit(scoped.row.id)"
-              >编辑</el-button
-            >
-            <el-button size="small" @click="del(scoped.row.id)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
       <div>
         <el-row class="page">
           <el-col :span="4" class="space-occupying"> </el-col>
@@ -181,10 +148,14 @@ export default {
           { prop: "carsNumber", label: "可停放车辆" },
           { prop: "status", label: "禁启用", type: "slot", slotName: "status" },
           { prop: "lnglat", label: "查看位置" },
-          { prop: "", label: "操作" },
+          { prop: "", label: "操作", type: "slot", slotName: "operate" },
         ],
         checkBox: true,
         url: "/parking/list/",
+        data: {
+          pageSize: 10,
+          pageNumber: 1,
+        },
       },
       form: {
         user: "",
@@ -279,7 +250,7 @@ export default {
               message: "删除成功!",
             });
             //删除完之后重新请求列表，就可以实现对列表数据的实时刷新
-            this.getParkingList();
+            this.$refs.table.getTableList();
           });
         })
         .catch(() => {
