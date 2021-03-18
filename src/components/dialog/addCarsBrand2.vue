@@ -5,13 +5,14 @@
       :visible.sync="dialogFlag"
       center
       @close="close"
+      @open="open"
     >
       <el-form ref="form" :model="form" label-width="90px">
-        <el-form-item label="车辆品牌">
-          <el-input v-model="form.name"></el-input>
+        <el-form-item label="品牌中文">
+          <el-input v-model="form.nameCh"></el-input>
         </el-form-item>
-        <el-form-item label="品牌型号">
-          <el-input v-model="form.name"></el-input>
+        <el-form-item label="品牌英文">
+          <el-input v-model="form.nameEn"></el-input>
         </el-form-item>
         <el-form-item label="LOGO">
           <div class="logoContent">
@@ -20,7 +21,7 @@
           </div>
         </el-form-item>
         <el-form-item label="禁启用">
-          <el-radio-group v-model="form.resource">
+          <el-radio-group v-model="form.type">
             <el-radio label="禁用"></el-radio>
             <el-radio label="启用"></el-radio>
           </el-radio-group>
@@ -29,7 +30,7 @@
             <div class="address-map"></div>
           </el-form-item> -->
         <el-form-item label="经纬度">
-          <el-input v-model="form.name"></el-input>
+          <el-input v-model="form.lnglat"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -41,21 +42,19 @@
 </template>
 
 <script>
+import { BrandLogo } from "../../api/brand";
 export default {
   name: "addCarsBrand2",
   data() {
     return {
       form: {
-        name: "",
-        region: "",
-        date1: "",
-        date2: "",
-        delivery: false,
-        type: [],
-        resource: "",
-        desc: "",
+        lnglat: "",
+        nameCh: "",
+        nameEn: "",
+        type: "",
       },
       dialogFlag: false,
+      logo: "",
     };
   },
   props: {
@@ -66,15 +65,26 @@ export default {
   },
   methods: {
     close() {
-    //   alert(111);
+      //   alert(111);
       this.$emit("update:dialogFormVisible", false);
     },
+    open() {
+      this.getBrandLogo()
+    },
+    getBrandLogo() {
+      BrandLogo().then((res)=> {
+        const data = res.data;
+        if(data) {
+          this.logo = data;
+        };
+        console.log(this.logo)
+      })
+    }
   },
   watch: {
     dialogFormVisible: {
       handler(newValue, oldValue) {
         this.dialogFlag = newValue;
-        console.log(newValue);
       },
     },
   },

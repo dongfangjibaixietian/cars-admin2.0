@@ -1,6 +1,12 @@
 <template>
   <div>
-    <el-table :data="table_data" border style="width: 100%">
+    <el-table
+      :data="table_data"
+      border
+      v-loading="tableLoading"
+      element-loading-text="拼命加载中"
+      style="width: 100%"
+    >
       <el-table-column
         v-if="config.checkBox"
         type="selection"
@@ -8,19 +14,19 @@
       ></el-table-column>
       <!-- 可以用一个template占位进行v-for的循环 -->
       <template v-for="item in config.tHead">
-          <!-- 这里放的是表头的内容 -->
+        <!-- 这里放的是表头的内容 -->
         <el-table-column
           v-if="item.type === 'function'"
           :key="item.label"
           :prop="item.prop"
           :label="item.label"
         >
-        <!-- 这里放的是表里面的内容,用template占位符表示 -->
-        <template slot-scope="scoped">
+          <!-- 这里放的是表里面的内容,用template占位符表示 -->
+          <template slot-scope="scoped">
             <!-- template占位符下面都要跟一个根标签 -->
             <!-- v-html表示解析成html标签的形式，{{}}表示解析为纯文本 -->
             <span v-html="item.callback && item.callback(scoped.row)"></span>
-        </template>
+          </template>
         </el-table-column>
         <el-table-column
           v-else-if="item.type === 'slot'"
@@ -28,9 +34,9 @@
           :prop="item.prop"
           :label="item.label"
         >
-        <template slot-scope="scoped">
+          <template slot-scope="scoped">
             <slot :name="item.slotName" :data="scoped.row"></slot>
-        </template>
+          </template>
         </el-table-column>
         <el-table-column
           v-else
@@ -78,6 +84,7 @@ export default {
   name: "tableData",
   data() {
     return {
+      tableLoading: false,
       table_config: {
         tHead: [],
         checkBox: true,
@@ -102,14 +109,19 @@ export default {
         url: this.table_config.url,
         data: this.table_config.data,
       };
+      this.tableLoading = true;
       GetTableData(requestData).then((res) => {
+        this.tableLoading = false;
         const data = res.data;
         this.table_data = data.data;
+      }).catch((err)=>{
+          this.tableLoading = false; 
       });
     },
     getTableList(val) {
-        if(val) {};
-        this.loadData()
+      if (val) {
+      }
+      this.loadData();
     },
     beforeMount() {},
   },

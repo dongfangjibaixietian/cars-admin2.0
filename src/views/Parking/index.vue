@@ -41,7 +41,7 @@
               ></el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="search">查询</el-button>
+              <el-button type="primary" @click="search()">查询</el-button>
             </el-form-item>
           </el-form>
         </div></el-col
@@ -60,6 +60,8 @@
         <template v-slot:status="data">
           <el-switch
             v-model="data.data.status"
+            @change="switchChange(data.data)"
+            :disabled="data.data.id == switch_disable"
             active-value="2"
             inactive-value="1"
             active-color="#13ce66"
@@ -71,7 +73,12 @@
           <el-button type="danger" size="small" @click="edit(data.data.id)"
             >编辑</el-button
           >
-          <el-button size="small" @click="del(data.data.id)">删除</el-button>
+          <el-button
+            size="small"
+            :loading="data.data.id == delId"
+            @click="del(data.data.id)"
+            >删除</el-button
+          >
         </template>
       </tableData>
       <div>
@@ -97,7 +104,7 @@
 </template>
 
 <script>
-import { ParkingList, ParkingDelate } from "../../api/parking";
+import { ParkingList, ParkingDelate, ParkingStatus } from "../../api/parking";
 import { GetCity } from "../../api/common";
 // 组件
 import tableData from "../../components/tableData";
@@ -113,6 +120,8 @@ export default {
       parking_type: this.$store.state.config.parking_type,
       parking_status: this.$store.state.config.parking_status,
       loading: false, //控制表格的加载
+      switch_disable: "", //控制禁启用的加载
+      delId: "", //控制删除按钮的加载
       //给表格组件传参数
       table_config: {
         tHead: [
@@ -229,6 +238,26 @@ export default {
       console.log(this.form);
       this.getParkingList();
     },
+    switchChange(val) {
+      const requestData = {
+        id: val.id,
+        status: val.status,
+      };
+      // 这里的判断依据是，val.id是行里面固有的，因此只需要再定义一个变量赋值进去，两者相等就能等到true值
+      this.switch_disable = val.id;
+      ParkingStatus(requestData)
+        .then((res) => {
+          this.$message({
+            type: "success",
+            message: res.message,
+          });
+          // 将变量置空，两者不相等，为false值
+          this.switch_disable = "";
+        })
+        .catch((error) => {
+          this.switch_disable = "";
+        });
+    },
     edit(id) {
       this.$router.push({
         name: "add",
@@ -244,6 +273,7 @@ export default {
         type: "warning",
       })
         .then(() => {
+          this.delId = id;
           ParkingDelate({ id: id }).then((res) => {
             this.$message({
               type: "success",
@@ -251,6 +281,7 @@ export default {
             });
             //删除完之后重新请求列表，就可以实现对列表数据的实时刷新
             this.$refs.table.getTableList();
+            this.delId = "";
           });
         })
         .catch(() => {
@@ -258,6 +289,7 @@ export default {
             type: "info",
             message: "已取消删除",
           });
+          this.delId = "";
         });
     },
     getParkingList() {

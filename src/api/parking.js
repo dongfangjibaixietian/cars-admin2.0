@@ -44,3 +44,12 @@ export function ParkingDelate(data = {}) {
         data
     })
 }
+
+// 停车场禁启用接口
+export function ParkingStatus(data = {}) {
+    return service.request({
+        method: "post",
+        url: "/parking/status/",
+        data
+    })
+}
