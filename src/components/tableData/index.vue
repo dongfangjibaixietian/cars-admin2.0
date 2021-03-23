@@ -35,7 +35,21 @@
           :label="item.label"
         >
           <template slot-scope="scoped">
+            <!-- {{scoped.row}} -->
             <slot :name="item.slotName" :data="scoped.row"></slot>
+          </template>
+        </el-table-column>
+        <!-- 下面是列 -->
+        <el-table-column
+          v-else-if="item.type === 'image'"
+          :key="item.label"
+          :prop="item.prop"
+          :label="item.label"
+          :width="item.width"
+        >
+        <!-- 这里展示的列里面的template -->
+          <template slot-scope="scoped">
+            <img :src="scoped.row.imgUrl" :alt="scoped.row.prop" :width="item.imgWidth || 50">
           </template>
         </el-table-column>
         <el-table-column

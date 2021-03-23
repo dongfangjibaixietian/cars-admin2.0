@@ -5,20 +5,14 @@
       <el-col :span="18"
         ><div class="formheader">
           <el-form :inline="true" :model="formInline" class="demo-form-inline">
-            <el-form-item label="车辆品牌：">
-              <el-select v-model="formInline.region" placeholder="选择品牌">
-                <el-option label="品牌一" value="shanghai"></el-option>
-                <el-option label="品牌二" value="beijing"></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="品牌型号：">
+            <el-form-item label="车辆品牌">
               <el-input
-                v-model="formInline.user"
-                placeholder="请输入"
+                v-model="formInline.brand"
+                placeholder="请输入品牌"
               ></el-input>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary">查询</el-button>
+              <el-button type="primary" @click="search()">查询</el-button>
             </el-form-item>
           </el-form>
         </div></el-col
@@ -35,49 +29,80 @@
 
     <!-- 表格数据 -->
     <div class="tablecontent">
-      <el-table :data="tableData" border style="width: 100%">
-        <el-table-column type="selection" width="45"> </el-table-column>
-        <el-table-column prop="name" label="停车场名称" width="180">
-        </el-table-column>
-        <el-table-column prop="type" label="类型" width="180">
-        </el-table-column>
-        <el-table-column prop="area" label="区域"> </el-table-column>
-        <el-table-column prop="carsNumber" label="可停放车辆">
-        </el-table-column>
-        <el-table-column prop="disable" label="禁启用">
-          <template slot-scope="scope">
-            <el-switch
-              v-model="scope.row.disable"
-              active-color="#13ce66"
-              inactive-color="#ff4949"
-            >
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="查看位置"> </el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button type="danger" size="small">编辑</el-button>
-            <el-button size="small">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <tableData :config="table_config" ref="table">
+        <!-- 在父组件里定义使用插槽的方法 -->
+        <template v-slot:status="data">
+          <el-switch
+            v-model="data.data.status"
+            @change="switchChange(data.data)"
+            :disabled="data.data.id == switch_disable"
+            active-value="2"
+            inactive-value="1"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          >
+          </el-switch>
+        </template>
+        <template v-slot:operate="data">
+          <el-button type="danger" size="small" @click="edit(data.data.id)"
+            >编辑</el-button
+          >
+          <el-button
+            size="small"
+            :loading="data.data.id == delId"
+            @click="del(data.data.id)"
+            >删除</el-button
+          >
+        </template>
+      </tableData>
     </div>
     <!-- 新增车辆弹出窗口 -->
-    <addCarsBrand2 :dialogFormVisible.sync="dialogFormVisible"/>
+    <addCarsBrand2 :dialogFormVisible.sync="dialogFormVisible" />
   </div>
 </template>
 
 <script>
-import addCarsBrand2 from "../../components/dialog/addCarsBrand2"
+import addCarsBrand2 from "../../components/dialog/addCarsBrand2";
+// table组件
+import tableData from "../../components/tableData";
 export default {
   name: "index",
-  components: { addCarsBrand2 },
+  components: { addCarsBrand2, tableData },
   data() {
     return {
       formInline: {
-        user: "",
-        region: "",
+        brand: "",
+      },
+      //给表格组件传参数
+      table_config: {
+        tHead: [
+          {
+            prop: "imgUrl",
+            label: "LOGO",
+            type: "image",
+            width: "50",
+            imgWidth: "40",
+          },
+          {
+            prop: "nameCh",
+            label: "车辆品牌",
+            type: "function",
+            // 两种子组件调用父组件方法的方式，一种是遍历然后调用item.callback(),一种是插槽
+            callback: (row) => {
+              return `${row.nameCh}/${row.nameEn}`;
+            },
+          },
+
+          { prop: "status", label: "禁启用", type: "slot", slotName: "status" },
+
+          { prop: "", label: "操作", type: "slot", slotName: "operate" },
+        ],
+        checkBox: true,
+        url: "/brand/list/",
+        data: {
+          pageSize: 10,
+          pageNumber: 1,
+        },
       },
       value: [],
       options: [
@@ -121,6 +146,45 @@ export default {
       },
       formLabelWidth: "120px",
     };
+  },
+  methods: {
+    search() {
+      const requestData = {
+        pageSize: 10,
+        pageNumber: 1,
+      };
+      if (this.formInline.brand) {
+        requestData.brand = this.formInline.brand;
+      };
+      console.log(requestData);
+      this.$refs.table.getTableList(requestData);
+    },
+    del(id) {
+      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          this.delId = id;
+          ParkingDelate({ id: id }).then((res) => {
+            this.$message({
+              type: "success",
+              message: "删除成功!",
+            });
+            //删除完之后重新请求列表，就可以实现对列表数据的实时刷新
+            this.$refs.table.getTableList();
+            this.delId = "";
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+          this.delId = "";
+        });
+    },
   },
 };
 </script>
