@@ -1,6 +1,6 @@
 <template>
   <div class="addContent">
-    <VueForm :formItem="formItem">
+    <VueForm :formItem="formItem" :formHandle="formHandle">
       <template v-slot:address>
         <el-cascader
           :placeholder="initValue"
@@ -137,7 +137,20 @@ export default {
           type: "input",
           prop: "lnglat",
           label: "经纬度",
-          disable: true
+          disable: true,
+        },
+      ],
+      // Vueform里面的按钮
+      formHandle: [
+        {
+          type: "danger",
+          label: "确定",
+          handle:() => {this.determine()}
+        },
+         {
+          type: "primary",
+          label: "重置",
+          handle: () => {this.remark()}
         },
       ],
       form: {
@@ -224,6 +237,12 @@ export default {
   methods: {
     lonlag(e) {
       console.log(e);
+    },
+    determine() {
+      console.log(111)
+    },
+    remark() {
+      console.log(444)
     },
     getAddress(node) {
       const index = node.level - 1;
