@@ -17,8 +17,12 @@
 
       <el-form-item label="停车场">
         <el-select v-model="form.park" placeholder="选择停车场">
-          <el-option label="奔驰" value="benchi"></el-option>
-          <el-option label="宝马" value="baoma"></el-option>
+          <el-option
+            v-for="item in options"
+            :key="item.index"
+            :label="item.parkingName"
+            :value="item.id"
+          ></el-option>
         </el-select>
       </el-form-item>
 
@@ -63,7 +67,10 @@
           <el-radio label="2">油</el-radio>
           <el-radio label="3">混合</el-radio>
         </el-radio-group>
-        <div class="progress-bar-wrap" v-if="form.energyType == 1 || form.energyType == 3">
+        <div
+          class="progress-bar-wrap"
+          v-if="form.energyType == 1 || form.energyType == 3"
+        >
           <span class="label-text">电量：</span>
           <el-row :gutter="20">
             <el-col :span="5">
@@ -78,7 +85,10 @@
             </el-col>
           </el-row>
         </div>
-        <div class="progress-bar-wrap" v-if="form.energyType == 2 || form.energyType == 3">
+        <div
+          class="progress-bar-wrap"
+          v-if="form.energyType == 2 || form.energyType == 3"
+        >
           <span class="label-text">油量：</span>
           <el-row :gutter="20">
             <el-col :span="5">
@@ -101,10 +111,13 @@
           <el-radio label="启用"></el-radio>
         </el-radio-group>
       </el-form-item>
-      
+
       <el-form-item label="车辆属性">
-  
-        <div class="cars-property-wrap" v-for="(item, index) in carsList" :key="item.key">
+        <div
+          class="cars-property-wrap"
+          v-for="(item, index) in carsList"
+          :key="item.key"
+        >
           <el-row :gutter="20">
             <el-col :span="5">
               <el-input value="item.key" v-model="item.key"></el-input>
@@ -113,19 +126,20 @@
               <el-input value="item.value" v-model="item.value"></el-input>
             </el-col>
             <el-col :span="2">
-              <el-button v-if="index==0" type="primary" @click="addAttr">+</el-button>
+              <el-button v-if="index == 0" type="primary" @click="addAttr"
+                >+</el-button
+              >
               <el-button v-else>-</el-button>
             </el-col>
           </el-row>
         </div>
-        
       </el-form-item>
 
       <el-form-item label="车辆描述">
         <!-- 富文本编辑器的dom元素 -->
-        <div ref="editorDom" style="text-align:left;"></div>
+        <div ref="editorDom" style="text-align: left"></div>
       </el-form-item>
-      
+
       <el-form-item>
         <el-button type="danger">立即创建</el-button>
       </el-form-item>
@@ -136,6 +150,9 @@
 <script>
 //富文本编辑器
 import Editor from "wangeditor";
+
+// api
+import { GetParking } from "../../api/common";
 export default {
   name: "add",
   data() {
@@ -154,31 +171,44 @@ export default {
         resource: "",
         desc: "",
       },
+      options: [],
       carsList: [
-        {key:111,value:111},
-        {key:222,value:222},
-        {key:333,value:333},
-        {key:444,value:444},
+        { key: 111, value: 111 },
+        { key: 222, value: 222 },
+        { key: 333, value: 333 },
+        { key: 444, value: 444 },
       ],
       // 富文本对象
-      editor: null
+      editor: null,
     };
   },
   mounted() {
     this.createEditor();
+    this._GetParking();
   },
   methods: {
-    addAttr(){
-      this.carsList.push({key:555,value:555},)
+    addAttr() {
+      this.carsList.push({ key: 555, value: 555 });
+    },
+    // 获取停车场
+    _GetParking() {
+      GetParking().then((res) => {
+        // this.form.park = res.data.data;
+        // console.log(this.form.park);
+        const data = res.data.data;
+        if (data) {
+          this.options = data;
+        }
+      });
     },
     // 创建富文本对象
     createEditor() {
       this.editor = new Editor(this.$refs.editorDom);
-      this.editor.customConfig.onchange = html => {};
+      this.editor.customConfig.onchange = (html) => {};
       // 下面是创建富文本实例
       this.editor.create();
-    }
-  }
+    },
+  },
 };
 </script>
 
