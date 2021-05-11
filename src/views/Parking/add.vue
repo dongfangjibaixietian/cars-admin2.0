@@ -10,9 +10,9 @@
         ></el-cascader>
       </template>
       <template v-slot:amap>
-        <div class="address-map">
+        <!-- <div class="address-map">
           <AMap ref="amap" @lonlag="lonlag" />
-        </div>
+        </div> -->
       </template>
     </VueForm>
     <!-- <el-form ref="form" :model="form" :rules="rules" label-width="90px">
